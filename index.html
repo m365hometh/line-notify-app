@@ -117,17 +117,25 @@ function submitBind(event) {
   const spinner = document.getElementById('loadingSpinner');
   const btnText = document.getElementById('btnText');
   const msgBox = document.getElementById('msgBox');
+  const emailVal = document.getElementById('email').value;
 
-  // 🚀 เปลี่ยนวิธีแพ็กข้อมูล: ส่งแบบฟอร์มธรรมดา (เสถียรกว่า JSON สำหรับ GAS)
-  const formData = new URLSearchParams();
-  formData.append('email', document.getElementById('email').value);
-  formData.append('lineUid', currentLineUid); 
+  spinner.style.display = 'block';
+  btnText.style.display = 'none';
+
+  // 🚀 แพ็กข้อมูลเตรียมส่ง
+  const payload = JSON.stringify({
+    email: emailVal,
+    lineUid: currentLineUid
+  });
+
+  // 🚀 เรียกใช้ลิงก์ Web App อันใหม่ที่คุณเพิ่งก๊อปปี้มา
+  const GAS_API_URL = "วาง_ลิงก์_WEB_APP_อันใหม่ล่าสุด_ตรงนี้";
 
   fetch(GAS_API_URL, {
     method: "POST",
-    body: formData.toString(), // ส่งเป็นข้อความ Query String
+    body: payload,
     headers: {
-      "Content-Type": "application/x-www-form-urlencoded"
+      "Content-Type": "text/plain;charset=utf-8", // สำคัญมาก: ห้ามเปลี่ยนคำนี้เด็ดขาด
     }
   })
   .then(response => response.json())
@@ -138,6 +146,7 @@ function submitBind(event) {
     if (res.success) {
       msgBox.innerText = "✅ " + res.message;
       msgBox.className = "message-box success";
+      setTimeout(() => { if(liff.isInClient()) liff.closeWindow(); }, 3000);
     } else {
       msgBox.innerText = "❌ " + res.message;
       msgBox.className = "message-box error";
@@ -145,7 +154,12 @@ function submitBind(event) {
     msgBox.style.display = "block";
   })
   .catch(err => {
-    alert("ส่งข้อมูลไม่สำเร็จ: " + err.message);
+    spinner.style.display = 'none';
+    btnText.style.display = 'inline';
+    msgBox.innerText = "❌ ระบบไม่สามารถส่งข้อมูลได้ โปรดลองอีกครั้ง";
+    msgBox.className = "message-box error";
+    msgBox.style.display = "block";
+    console.error("CORS/Fetch Error:", err);
   });
 }
   </script>
