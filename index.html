@@ -123,7 +123,7 @@ function submitBind(event) {
   btnText.style.display = 'none';
 
   // 🛑 วางลิงก์ Web App ใหม่ของคุณตรงนี้
-  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbz8syQhGQB9_mXx7XcLCCZyDgvIALgBcRP6dpnpcHvssxLjSNzC3P8o8lpzCCie4jXdYQ/exec";
+  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbz8syQhGQB9_mXx7XcLCCZyDgvIALgBcRP6dpnpcHvssxLjSNzC3P8o8lpzCCie4jXdYQ/exec;
 
   // 🚀 นำข้อมูลมาต่อท้าย URL แบบ GET Request
   const finalUrl = GAS_API_URL + "?email=" + encodeURIComponent(emailVal) + "&lineUid=" + encodeURIComponent(currentLineUid);
