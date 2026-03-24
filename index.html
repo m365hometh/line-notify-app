@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <title>รับแจ้งเตือนผ่าน LINE</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root { --primary: #00B900; --primary-dark: #009900; }
+    body {
+      font-family: 'Sarabun', sans-serif; background-color: #f4f6f9; color: #333;
+      display: flex; justify-content: center; align-items: center;
+      min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box;
+    }
+    .container {
+      background: #ffffff; width: 100%; max-width: 400px;
+      border-radius: 16px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); overflow: hidden; text-align: center;
+    }
+    .header { background: var(--primary); padding: 30px 20px; color: white; }
+    .header i { font-size: 50px; margin-bottom: 10px; }
+    .header h2 { margin: 0; font-size: 22px; }
+    .form-content { padding: 30px 20px; }
+    .input-group { margin-bottom: 20px; text-align: left; }
+    .input-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; }
+    .input-group input {
+      width: 100%; padding: 12px 15px; border: 1px solid #ddd;
+      border-radius: 8px; font-family: 'Sarabun', sans-serif; font-size: 15px; box-sizing: border-box;
+    }
+    .input-group input:focus { border-color: var(--primary); outline: none; }
+    .btn-submit {
+      background: var(--primary); color: white; border: none; width: 100%;
+      padding: 14px; border-radius: 8px; font-size: 16px; font-weight: 700;
+      cursor: pointer; transition: 0.3s; font-family: 'Sarabun', sans-serif;
+    }
+    .btn-submit:disabled { background: #cccccc; cursor: not-allowed; }
+    .message-box { margin-top: 15px; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 600; display: none; }
+    .success { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+    .error { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
+    .loader { display: none; border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; margin: 0 auto; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <i class="fab fa-line"></i>
+      <h2>รับแจ้งเตือนผ่าน LINE</h2>
+    </div>
+    
+    <div class="form-content">
+      <form id="bindForm" onsubmit="submitBind(event)">
+        <div class="input-group">
+          <label>กรอกอีเมลที่ใช้ลงทะเบียน</label>
+          <input type="email" id="email" placeholder="example@email.com" required>
+        </div>
+
+        <button type="submit" id="btnSubmit" disabled>
+          <span id="btnText">กำลังเชื่อมต่อ LINE...</span>
+          <div class="loader" id="loadingSpinner"></div>
+        </button>
+
+        <div id="msgBox" class="message-box"></div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script>
+    // ==========================================
+    // 🛑 ใส่ข้อมูลของคุณตรงนี้ 2 จุดครับ 🛑
+    // ==========================================
+    const MY_LIFF_ID = "2009577141-fpEDj92S"; // LIFF ID ของคุณ
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbz8syQhGQB9_mXx7XcLCCZyDgvIALgBcRP6dpnpcHvssxLjSNzC3P8o8lpzCCie4jXdYQ/exec"; 
+    // ==========================================
+
+    let currentLineUid = "";
+
+    async function initializeLiff() {
+      try {
+        await liff.init({ liffId: MY_LIFF_ID }); 
+        
+        if (liff.isLoggedIn()) {
+          const profile = await liff.getProfile();
+          currentLineUid = profile.userId; 
+          
+          document.getElementById('btnSubmit').disabled = false;
+          document.getElementById('btnText').innerText = "ยืนยันการผูกบัญชี";
+        } else {
+          liff.login(); // คราวนี้ login ได้สบายๆ ไม่มี Error Insecure มากวนแล้วครับ
+        }
+      } catch (err) {
+        console.error("LIFF Init Error", err);
+        document.getElementById('btnText').innerText = "โหลดข้อมูลไม่สำเร็จ";
+      }
+    }
+    
+    window.onload = initializeLiff;
+
+    function submitBind(event) {
+      event.preventDefault();
+
+      const btn = document.getElementById('btnSubmit');
+      const btnText = document.getElementById('btnText');
+      const spinner = document.getElementById('loadingSpinner');
+      const msgBox = document.getElementById('msgBox');
+
+      btn.disabled = true;
+      btnText.style.display = 'none';
+      spinner.style.display = 'block';
+      msgBox.style.display = "none";
+      msgBox.className = "message-box";
+
+      // เตรียมแพ็กเกจข้อมูลส่งไปหลังบ้าน
+      const data = {
+        email: document.getElementById('email').value,
+        lineUid: currentLineUid 
+      };
+
+      // 🚀 ส่งข้อมูลไปที่ Google Apps Script ผ่าน API
+      fetch(GAS_API_URL, {
+        method: "POST",
+        body: JSON.stringify(data)
+      })
+      .then(response => response.json())
+      .then(res => {
+        spinner.style.display = 'none';
+        
+        if(res.success) {
+            msgBox.innerText = "✅ " + res.message;
+            msgBox.classList.add("success");
+            msgBox.style.display = "block";
+            
+            setTimeout(() => {
+               if (liff.isInClient()) liff.closeWindow(); 
+            }, 3500);
+        } else {
+            throw new Error(res.message);
+        }
+      })
+      .catch(err => {
+        spinner.style.display = 'none';
+        btnText.style.display = 'inline';
+        btn.disabled = false;
+        msgBox.innerText = "❌ " + (err.message || "เกิดข้อผิดพลาดในการเชื่อมต่อ");
+        msgBox.classList.add("error");
+        msgBox.style.display = "block";
+      });
+    }
+  </script>
+</body>
+</html>
