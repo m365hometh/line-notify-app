@@ -2,159 +2,127 @@
 <html lang="th">
 <head>
   <meta charset="utf-8">
-  <title>รับแจ้งเตือนผ่าน LINE</title>
+  <title>ผูกบัญชี LINE</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    :root { --primary: #00B900; --primary-dark: #009900; }
+    :root { --line-green: #06C755; }
     body {
-      font-family: 'Sarabun', sans-serif; background-color: #f4f6f9; color: #333;
-      display: flex; justify-content: center; align-items: center;
-      min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box;
+      font-family: 'Sarabun', sans-serif; background-color: #f4f6f9; 
+      display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box;
     }
-    .container {
-      background: #ffffff; width: 100%; max-width: 400px;
-      border-radius: 16px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); overflow: hidden; text-align: center;
-    }
-    .header { background: var(--primary); padding: 30px 20px; color: white; }
-    .header i { font-size: 50px; margin-bottom: 10px; }
-    .header h2 { margin: 0; font-size: 22px; }
-    .form-content { padding: 30px 20px; }
-    .input-group { margin-bottom: 20px; text-align: left; }
-    .input-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; }
-    .input-group input {
-      width: 100%; padding: 12px 15px; border: 1px solid #ddd;
-      border-radius: 8px; font-family: 'Sarabun', sans-serif; font-size: 15px; box-sizing: border-box;
-    }
-    .input-group input:focus { border-color: var(--primary); outline: none; }
-    .btn-submit {
-      background: var(--primary); color: white; border: none; width: 100%;
-      padding: 14px; border-radius: 8px; font-size: 16px; font-weight: 700;
-      cursor: pointer; transition: 0.3s; font-family: 'Sarabun', sans-serif;
-    }
-    .btn-submit:disabled { background: #cccccc; cursor: not-allowed; }
-    .message-box { margin-top: 15px; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 600; display: none; }
-    .success { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
-    .error { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
-    .loader { display: none; border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; margin: 0 auto; }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .card { background: white; width: 100%; max-width: 400px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); overflow: hidden; }
+    .header { background: var(--line-green); color: white; text-align: center; padding: 20px; font-size: 20px; font-weight: bold; }
+    .content { padding: 25px 20px; text-align: center; }
+    .uid-box { background: #f8f9fa; border: 1px dashed #ccc; padding: 10px; border-radius: 8px; margin-bottom: 20px; font-size: 13px; color: #555; word-break: break-all; display: none; }
+    .input-group { text-align: left; margin-bottom: 20px; }
+    .input-group label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 14px; }
+    .input-group input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; font-family: 'Sarabun', sans-serif; box-sizing: border-box; }
+    .input-group input:focus { border-color: var(--line-green); outline: none; }
+    .btn { background: var(--line-green); color: white; border: none; width: 100%; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+    .btn:disabled { background: #ccc; cursor: not-allowed; }
+    .msg-box { margin-top: 15px; padding: 12px; border-radius: 8px; font-size: 14px; display: none; }
+    .msg-success { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+    .msg-error { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <div class="header">
-      <i class="fab fa-line"></i>
-      <h2>รับแจ้งเตือนผ่าน LINE</h2>
-    </div>
-    
-    <div class="form-content">
-      <form id="bindForm" onsubmit="submitBind(event)">
-        <div class="input-group">
-          <label>กรอกอีเมลที่ใช้ลงทะเบียน</label>
-          <input type="email" id="email" placeholder="example@email.com" required>
-        </div>
-
-        <div id="uidBox" style="display: none; background: #f8f9fa; padding: 10px; border-radius: 8px; margin-bottom: 20px; border: 1px dashed #ccc; text-align: left;">
-        <small style="color: #666; font-weight: bold; display: block; margin-bottom: 4px;">LINE User ID ของคุณ:</small>
-        <code id="displayUid" style="color: #d63384; word-break: break-all; font-size: 13px;">กำลังโหลด...</code>
+  <div class="card">
+    <div class="header">เชื่อมต่อการแจ้งเตือน LINE</div>
+    <div class="content">
+      
+      <div id="uidBox" class="uid-box">
+        <b>สถานะ:</b> ดึงข้อมูล LINE สำเร็จ<br>
+        <span id="displayUid" style="color: #d63384;"></span>
       </div>
 
-        <button type="submit" id="btnSubmit" disabled>
-          <span id="btnText">กำลังเชื่อมต่อ LINE...</span>
-          <div class="loader" id="loadingSpinner"></div>
-        </button>
-
-        <div id="msgBox" class="message-box"></div>
+      <form onsubmit="submitForm(event)">
+        <div class="input-group">
+          <label>อีเมลที่ลงทะเบียนไว้</label>
+          <input type="email" id="email" placeholder="กรอกอีเมลของคุณ" required>
+        </div>
+        <button type="submit" id="btnSubmit" class="btn" disabled>กำลังเตรียมระบบ...</button>
       </form>
+
+      <div id="msgBox" class="msg-box"></div>
     </div>
   </div>
 
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script>
     // ==========================================
-    // 🛑 ใส่ข้อมูลของคุณตรงนี้ 2 จุดครับ 🛑
+    // 🛑 1. ใส่ LIFF ID และ ลิงก์ Web App (ตัวล่าสุด) ตรงนี้ 🛑
     // ==========================================
-    const MY_LIFF_ID = "2009577141-fpEDj92S"; // LIFF ID ของคุณ
+    const MY_LIFF_ID = "2009577141-fpEDj92S"; 
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbz8syQhGQB9_mXx7XcLCCZyDgvIALgBcRP6dpnpcHvssxLjSNzC3P8o8lpzCCie4jXdYQ/exec"; 
-    // ==========================================
-
-    let currentLineUid = "";
-
-    async function initializeLiff() {
-  try {
-    await liff.init({ liffId: MY_LIFF_ID }); 
     
-    if (liff.isLoggedIn()) {
-      const profile = await liff.getProfile();
-      currentLineUid = profile.userId; 
+    let currentUid = "";
 
-      // 🚀 เพิ่ม 3 บรรทัดนี้: เพื่อโชว์ UID บนหน้าจอ
-      document.getElementById('uidBox').style.display = 'block';
-      document.getElementById('displayUid').innerText = currentLineUid;
+    // ตั้งค่า LIFF
+    async function initLiff() {
+      try {
+        await liff.init({ liffId: MY_LIFF_ID });
+        if (liff.isLoggedIn()) {
+          const profile = await liff.getProfile();
+          currentUid = profile.userId;
+          
+          document.getElementById("uidBox").style.display = "block";
+          document.getElementById("displayUid").innerText = currentUid;
+          
+          const btn = document.getElementById("btnSubmit");
+          btn.innerText = "ยืนยันการผูกบัญชี";
+          btn.disabled = false;
+        } else {
+          liff.login({ redirectUri: window.location.href });
+        }
+      } catch (err) {
+        showMsg("❌ ระบบ LIFF ขัดข้อง: " + err.message, "error");
+      }
+    }
+    
+    window.onload = initLiff;
+
+    // ส่งข้อมูลไป Google Apps Script (แบบ GET เพื่อหลบ CORS)
+    function submitForm(event) {
+      event.preventDefault();
       
-      document.getElementById('btnSubmit').disabled = false;
-      document.getElementById('btnText').innerText = "ยืนยันการผูกบัญชี";
-    } else {
-      liff.login({ redirectUri: window.location.href }); 
+      const btn = document.getElementById("btnSubmit");
+      const email = document.getElementById("email").value;
+      
+      btn.innerText = "กำลังบันทึกข้อมูล...";
+      btn.disabled = true;
+      document.getElementById("msgBox").style.display = "none";
+
+      // แนบข้อมูลไปกับ URL ตรงๆ
+      const urlWithData = GAS_API_URL + "?email=" + encodeURIComponent(email) + "&lineUid=" + encodeURIComponent(currentUid);
+
+      fetch(urlWithData, { method: "GET" })
+        .then(res => res.json())
+        .then(data => {
+          btn.innerText = "ยืนยันการผูกบัญชี";
+          btn.disabled = false;
+          
+          if (data.success) {
+            showMsg("✅ " + data.message, "success");
+            setTimeout(() => { if(liff.isInClient()) liff.closeWindow(); }, 3000);
+          } else {
+            showMsg("❌ " + data.message, "error");
+          }
+        })
+        .catch(err => {
+          btn.innerText = "ยืนยันการผูกบัญชี";
+          btn.disabled = false;
+          showMsg("❌ ติดต่อฐานข้อมูลไม่ได้: " + err.message, "error");
+        });
     }
-  } catch (err) {
-    console.error("LIFF Init Error", err);
-    // กรณี Error ให้โชว์แจ้งเตือน
-    document.getElementById('uidBox').style.display = 'block';
-    document.getElementById('displayUid').innerText = "Error: " + err.message;
-  }
-}
-    
-    window.onload = initializeLiff;
 
-    // ... โค้ดส่วน UI และ LIFF อื่นๆ เหมือนเดิม ...
-
-function submitBind(event) {
-  event.preventDefault();
-  
-  const spinner = document.getElementById('loadingSpinner');
-  const btnText = document.getElementById('btnText');
-  const msgBox = document.getElementById('msgBox');
-  const emailVal = document.getElementById('email').value;
-
-  spinner.style.display = 'block';
-  btnText.style.display = 'none';
-
-  // 🛑 วางลิงก์ Web App ใหม่ของคุณตรงนี้
-  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbz8syQhGQB9_mXx7XcLCCZyDgvIALgBcRP6dpnpcHvssxLjSNzC3P8o8lpzCCie4jXdYQ/exec";
-
-  // 🚀 นำข้อมูลมาต่อท้าย URL แบบ GET Request
-  const finalUrl = GAS_API_URL + "?email=" + encodeURIComponent(emailVal) + "&lineUid=" + encodeURIComponent(currentLineUid);
-
-  fetch(finalUrl, {
-    method: "GET",
-    redirect: "follow" // สำคัญ: เพื่อให้วิ่งตาม Redirect ของ Google
-  })
-  .then(response => response.json())
-  .then(res => {
-    spinner.style.display = 'none';
-    btnText.style.display = 'inline';
-    
-    if (res.success) {
-      msgBox.innerText = "✅ " + res.message;
-      msgBox.className = "message-box success";
-      setTimeout(() => { if(liff.isInClient()) liff.closeWindow(); }, 3000);
-    } else {
-      msgBox.innerText = "❌ " + res.message;
-      msgBox.className = "message-box error";
+    function showMsg(text, type) {
+      const box = document.getElementById("msgBox");
+      box.innerText = text;
+      box.className = "msg-box " + (type === "success" ? "msg-success" : "msg-error");
+      box.style.display = "block";
     }
-    msgBox.style.display = "block";
-  })
-  .catch(err => {
-    spinner.style.display = 'none';
-    btnText.style.display = 'inline';
-    msgBox.innerText = "❌ ระบบไม่สามารถเชื่อมต่อ Sheet ได้: " + err.message;
-    msgBox.className = "message-box error";
-    msgBox.style.display = "block";
-  });
-}
   </script>
 </body>
 </html>
