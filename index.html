@@ -56,6 +56,11 @@
           <input type="email" id="email" placeholder="example@email.com" required>
         </div>
 
+        <div id="uidBox" style="display: none; background: #f8f9fa; padding: 10px; border-radius: 8px; margin-bottom: 20px; border: 1px dashed #ccc; text-align: left;">
+        <small style="color: #666; font-weight: bold; display: block; margin-bottom: 4px;">LINE User ID ของคุณ:</small>
+        <code id="displayUid" style="color: #d63384; word-break: break-all; font-size: 13px;">กำลังโหลด...</code>
+      </div>
+
         <button type="submit" id="btnSubmit" disabled>
           <span id="btnText">กำลังเชื่อมต่อ LINE...</span>
           <div class="loader" id="loadingSpinner"></div>
