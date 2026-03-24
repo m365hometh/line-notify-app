@@ -122,21 +122,15 @@ function submitBind(event) {
   spinner.style.display = 'block';
   btnText.style.display = 'none';
 
-  // 🚀 แพ็กข้อมูลเตรียมส่ง
-  const payload = JSON.stringify({
-    email: emailVal,
-    lineUid: currentLineUid
-  });
+  // 🛑 วางลิงก์ Web App ใหม่ของคุณตรงนี้
+  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbz8syQhGQB9_mXx7XcLCCZyDgvIALgBcRP6dpnpcHvssxLjSNzC3P8o8lpzCCie4jXdYQ/exec";
 
-  // 🚀 เรียกใช้ลิงก์ Web App อันใหม่ที่คุณเพิ่งก๊อปปี้มา
-  const GAS_API_URL = "วาง_ลิงก์_WEB_APP_อันใหม่ล่าสุด_ตรงนี้";
+  // 🚀 นำข้อมูลมาต่อท้าย URL แบบ GET Request
+  const finalUrl = GAS_API_URL + "?email=" + encodeURIComponent(emailVal) + "&lineUid=" + encodeURIComponent(currentLineUid);
 
-  fetch(GAS_API_URL, {
-    method: "POST",
-    body: payload,
-    headers: {
-      "Content-Type": "text/plain;charset=utf-8", // สำคัญมาก: ห้ามเปลี่ยนคำนี้เด็ดขาด
-    }
+  fetch(finalUrl, {
+    method: "GET",
+    redirect: "follow" // สำคัญ: เพื่อให้วิ่งตาม Redirect ของ Google
   })
   .then(response => response.json())
   .then(res => {
@@ -156,10 +150,9 @@ function submitBind(event) {
   .catch(err => {
     spinner.style.display = 'none';
     btnText.style.display = 'inline';
-    msgBox.innerText = "❌ ระบบไม่สามารถส่งข้อมูลได้ โปรดลองอีกครั้ง";
+    msgBox.innerText = "❌ ระบบไม่สามารถเชื่อมต่อ Sheet ได้: " + err.message;
     msgBox.className = "message-box error";
     msgBox.style.display = "block";
-    console.error("CORS/Fetch Error:", err);
   });
 }
   </script>
