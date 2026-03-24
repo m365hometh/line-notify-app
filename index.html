@@ -83,23 +83,29 @@
     let currentLineUid = "";
 
     async function initializeLiff() {
-      try {
-        await liff.init({ liffId: MY_LIFF_ID }); 
-        
-        if (liff.isLoggedIn()) {
-          const profile = await liff.getProfile();
-          currentLineUid = profile.userId; 
-          
-          document.getElementById('btnSubmit').disabled = false;
-          document.getElementById('btnText').innerText = "ยืนยันการผูกบัญชี";
-        } else {
-          liff.login(); // คราวนี้ login ได้สบายๆ ไม่มี Error Insecure มากวนแล้วครับ
-        }
-      } catch (err) {
-        console.error("LIFF Init Error", err);
-        document.getElementById('btnText').innerText = "โหลดข้อมูลไม่สำเร็จ";
-      }
+  try {
+    await liff.init({ liffId: MY_LIFF_ID }); 
+    
+    if (liff.isLoggedIn()) {
+      const profile = await liff.getProfile();
+      currentLineUid = profile.userId; 
+
+      // 🚀 เพิ่ม 3 บรรทัดนี้: เพื่อโชว์ UID บนหน้าจอ
+      document.getElementById('uidBox').style.display = 'block';
+      document.getElementById('displayUid').innerText = currentLineUid;
+      
+      document.getElementById('btnSubmit').disabled = false;
+      document.getElementById('btnText').innerText = "ยืนยันการผูกบัญชี";
+    } else {
+      liff.login({ redirectUri: window.location.href }); 
     }
+  } catch (err) {
+    console.error("LIFF Init Error", err);
+    // กรณี Error ให้โชว์แจ้งเตือน
+    document.getElementById('uidBox').style.display = 'block';
+    document.getElementById('displayUid').innerText = "Error: " + err.message;
+  }
+}
     
     window.onload = initializeLiff;
 
