@@ -114,47 +114,39 @@
 function submitBind(event) {
   event.preventDefault();
   
-  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbz8syQhGQB9_mXx7XcLCCZyDgvIALgBcRP6dpnpcHvssxLjSNzC3P8o8lpzCCie4jXdYQ/exec"; // 👈 ก๊อปปี้ลิงก์ /exec มาใส่ตรงนี้
-  
-  const data = {
-    email: document.getElementById('email').value,
-    lineUid: currentLineUid // ตัวแปรนี้ต้องได้ค่ามาจาก liff.getProfile()
-  };
-
-  fetch(GAS_API_URL, {
-  method: "POST",
-  body: JSON.stringify(data) // data จะมี { email: ..., lineUid: ... }
-})
-.then(response => response.json())
-.then(res => {
-  const msgBox = document.getElementById('msgBox');
   const spinner = document.getElementById('loadingSpinner');
   const btnText = document.getElementById('btnText');
-  const btnSubmit = document.getElementById('btnSubmit');
+  const msgBox = document.getElementById('msgBox');
 
-  spinner.style.display = 'none';
-  btnText.style.display = 'inline';
-  btnSubmit.disabled = false;
+  // 🚀 เปลี่ยนวิธีแพ็กข้อมูล: ส่งแบบฟอร์มธรรมดา (เสถียรกว่า JSON สำหรับ GAS)
+  const formData = new URLSearchParams();
+  formData.append('email', document.getElementById('email').value);
+  formData.append('lineUid', currentLineUid); 
 
-  if (res.success) {
-    msgBox.innerText = "✅ " + res.message; // จะขึ้นว่า "ผูกบัญชีสำเร็จ! บันทึกข้อมูลลง Column P..."
-    msgBox.className = "message-box success";
-    msgBox.style.display = "block";
+  fetch(GAS_API_URL, {
+    method: "POST",
+    body: formData.toString(), // ส่งเป็นข้อความ Query String
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    }
+  })
+  .then(response => response.json())
+  .then(res => {
+    spinner.style.display = 'none';
+    btnText.style.display = 'inline';
     
-    // ถ้าเปิดในแอป LINE ให้ปิดหน้าต่างอัตโนมัติใน 3 วินาที
-    setTimeout(() => {
-      if (liff.isInClient()) liff.closeWindow();
-    }, 3000);
-  } else {
-    msgBox.innerText = "❌ " + res.message; // จะขึ้นว่า "ไม่พบอีเมล..."
-    msgBox.className = "message-box error";
+    if (res.success) {
+      msgBox.innerText = "✅ " + res.message;
+      msgBox.className = "message-box success";
+    } else {
+      msgBox.innerText = "❌ " + res.message;
+      msgBox.className = "message-box error";
+    }
     msgBox.style.display = "block";
-  }
-})
-.catch(err => {
-  console.error(err);
-  alert("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์");
-});
+  })
+  .catch(err => {
+    alert("ส่งข้อมูลไม่สำเร็จ: " + err.message);
+  });
 }
   </script>
 </body>
